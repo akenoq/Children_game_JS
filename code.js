@@ -1,208 +1,154 @@
-"use strict";
+window.onload = function () 
+{
+let pauseBtn = document.getElementById("pauseBtn");
+let scoreLabel = document.getElementById("scoreLabel");
+let canvas = document.getElementById("pov"), ris = canvas.getContext('2d');
+			canvas.height = 480;
+			canvas.width  = 640;
+			ris.strokeRect(1, 1, 639, 479);
+			
+canvas.onclick = Point;
 
-window.onload = function () {
-    // get elements from html page
-    let pauseBtn = document.getElementById("pauseBtn");
-    let can = document.getElementById("can");
-    let scoreLabel = document.getElementById("scoreLabel");
+function drawFon() {
+    ris.clearRect(0, 0, 800, 600);
+    ris.fillStyle = '#2F4F4F';
+    ris.fillRect(0, 0, 800, 600);
+}
 
-    // init drawing holst
-    let holst = can.getContext("2d");
+let obj = [];
 
-    // draw background in holst
-    function drawFon() {
-        holst.clearRect(0, 0, 800, 600);
-        holst.fillStyle = '#2F4F4F';
-        holst.fillRect(0, 0, 800, 600);
-    }
+class touch 
+{
+	constructor(x=0,y=0)
+	{
+		this.x=x;
+		this.y=y;
+		this.size=1;
+	}
+	
+	grow ()
+	{	
+		this.size+=1;
+		if (this.size>25) 
+			return true;
+			else return false;
+	}
+	
+	draw ()
+	{
+		ris.beginPath();
+		ris.arc(this.x,this.y, this.size, 0, 2* Math.PI, true);
+		ris.closePath();
+		ris.stroke();
+	}
+}
 
-    drawFon();
+class ball
+{
+	constructor(x=200, y=200)
+	{
+		this.x=x;
+		this.y=y;
+		this.size=25;
+		this.vecX=0;
+		this.vecY=0;
+	}
+	
+	draw ()
+	{
+		ris.beginPath();
+		ris.arc(this.x,this.y, this.size, 0, 2* Math.PI, true);
+		ris.closePath();
+		ris.fillStyle = '#FFFFFF';
+		ris.fill();
+	}
+	
+	move ()
+	{
+		this.x+=this.vecX*2;
+		this.y+=this.vecY*2;
+	}
+	
+	punch ()
+	{
+		let t = obj.length;
+/*				
+				ris.fillStyle = '#000000';
+				ris.font = "50px Arial";
+				ris.fillText(this.vecX,50,100);
+				ris.fillText(this.vecY,50,200);
+*/
+		for (let i=0; i<t; i++){
+			let dx=this.x-obj[i].x, dy=this.y-obj[i].y, dc=Math.sqrt(dx*dx+dy*dy);
+			if (dc<=(obj[i].size+this.size)) {
+				let p = 2*(((this.vecX*dx)/dc)+((this.vecY*dy)/dc));
+				let nX=this.vecX - p*(dx/dc), nY=this.vecY - p*(dy/dc);
+				this.vecX=nX+(dx/dc)*obj[i].size/25;
+				this.vecY=nY+(dy/dc)*obj[i].size/25;
+				obj.splice(i,1);
+				i--;
+				t--;				
+			} 
+		}
+	}
+}
 
-    // draw one line
-    function drawLine(x1, y1, x2, y2) {
-        holst.lineWidth = 2;
-        holst.strokeStyle = "#FF0000";
-        holst.beginPath();
-        holst.moveTo(x1, y1);
-        holst.lineTo(x2, y2);
-        holst.closePath();
-        holst.stroke();
-    }
+let bal= new ball();
 
-    drawLine(0, 550, 800, 550);
+let score = 0;
+scoreLabel.innerHTML = "Очки: " + score;
 
-    // left and right
-    let a = false;
-    let d = false;
-
-    // event of key down
-    window.onkeydown = function (event) {
-        let keyNumber = event.keyCode;
-        if(keyNumber === 65) {
-            a = true;
-        }
-        if(keyNumber === 68) {
-            d = true;
-        }
-    };
-
-    // event of key up
-    window.onkeyup = function (event) {
-        let keyNumber = event.keyCode;
-        if(keyNumber === 65) {
-            a = false;
-        }
-        if(keyNumber === 68) {
-            d = false;
-        }
-    };
-
-
-    // hero position
-    let xx = 350;
-    let yy = 500;
-
-    // draw hero function
-    function drawHero() {
-        holst.strokeStyle = "#FF6347";
-        holst.lineWidth = 2;
-        holst.strokeRect(xx, yy, 100, 50);
-    }
-
-    drawHero();
-
-    // move hero function
-    function moveHero() {
-        if(a === true) {
-            if(xx !== 0) {
-                xx -= 10;
-            }
-        }
-        if(d === true) {
-            if(xx !== 700) {
-                xx += 10;
-            }
-        }
-    }
-
-    // get random number
-    function getRandomNumber(k) {
-        let r = Math.random();
-        let m = r * 10000;
-        let n = parseInt(m);
-        let result = n % k;
-        return result;
-    }
-
-    // create empty array
-    let arr = [];
-
-    // array size
-    let size = 50;
-
-    // y position of enemy for creating
-    let positionY = -50;
-
-    // function drawEnemy
-    function drawEnemy(x_enemy, y_enemy) {
-        holst.strokeStyle = "#ADFF2F";
-        holst.lineWidth = 2;
-        holst.strokeRect(x_enemy, y_enemy, 100, 50);
-    }
-
-    // push elements to array
-    for(let i = 0; i < size; i++) {
-        let randomValue = getRandomNumber(8);
-        let positionX = randomValue * 100;
-        let enemy = {
-            xx: positionX,
-            yy: positionY,
-            dead: false,
-        };
-        arr.push(enemy);
-        positionY -= 70;
-    }
-
-    // move to down size all enemies and draw them
-    function moveAndDrawAllEnemies() {
-        for(let i = 0; i < size; i++) {
-            if(arr[i].yy < 560) {
-                arr[i].yy += 5;
-            }
-            if(arr[i].dead === false) {
-                drawEnemy(arr[i].xx, arr[i].yy);
-            }
-        }
-    }
-
-    // score of hero
-    let score = 0;
-
-    // print score
+function Point(e)
+{
+	let xx = e.pageX - canvas.offsetLeft;
+	let yy = e.pageY - canvas.offsetTop;
+	let t = obj.length;
+	obj[t] = new touch(xx,yy);
+	score++;
     scoreLabel.innerHTML = "Очки: " + score;
+}
 
-    // control hitTest enemies with hero
-    function controlHitTest() {
-        let hero_xc = xx + 50;
-        let hero_yc = yy + 25;
-        for(let i = 0; i < size; i++) {
-            let enemy_xc = arr[i].xx + 50;
-            let enemy_yc = arr[i].yy + 25;
-            if(arr[i].dead === false) {
-                if (Math.abs(hero_xc - enemy_xc) < 100) {
-                    if (Math.abs(hero_yc - enemy_yc) < 50) {
-                        arr[i].dead = true;
-                        score++;
-                        scoreLabel.innerHTML = "Очки: " + score;
-                    }
-                }
-            }
-        }
+let pause = false;
+
+pauseBtn.onclick = function() {
+    pause = !pause;
+    if(pause === true) {
+        canvas.style.opacity = 0.5;
     }
-
-    // pause variable
-    let pause = false;
-
-    // pause btn click
-    pauseBtn.onclick = function() {
-        pause = !pause;
-        if(pause === true) {
-            can.style.opacity = 0.5;
-        }
-        if(pause === false) {
-            can.style.opacity = 1.0;
-        }
-    };
-
-    // control is game finished
-    function isGameFinished() {
-        let count = 0;
-        for(let i = 0; i < size; i++) {
-            if(arr[i].yy >= 555) {
-                count++;
-            }
-        }
-        if(count === 50) {
-            return true;
-        }
-        return false;
+    if(pause === false) {
+        canvas.style.opacity = 1.0;
     }
+}
+	
+function Redraw()
+{
+  if (pause === false){
+	drawFon();
+	let t = obj.length;
+	for (let i=0; i<t; i++){
+		if (obj[i].grow()) {
+			obj.shift();
+			i--;
+			t--;
+		} else 
+			obj[i].draw();
+	}
+	bal.draw();
+	bal.punch();
+	bal.move();
+	if ((bal.x<0)||(bal.y<0)||(bal.x>640)||(bal.y>480)){			
+		clearInterval(timer);
+        alert("Результат игры: " + score);
 
-    // repeating function
-    let timeWorker = setInterval(function() {
-        let gameFinished = isGameFinished();
-        if(gameFinished === false) {
-            if (pause === false) {
-                moveHero();
-                drawFon();
-                drawLine(0, 550, 800, 550);
-                drawHero();
-                moveAndDrawAllEnemies();
-                controlHitTest();
-            }
-        } else {
-            clearInterval(timeWorker);
-            alert("Результат игры: " + score + " / 50");
-        }
-    }, 50);
-};
+	}
+  }
+}
+
+let timer = setInterval(Redraw, 50);
+}
+
+
+
+
+	
+	

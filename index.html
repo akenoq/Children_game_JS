@@ -10,6 +10,7 @@
             background: #E9967A;
             font-size: 20px;
             font-family: Verdana, Arial, Helvetica, sans-serif;
+            text-align: center;
         }
 
         .buttonClass {
@@ -26,13 +27,23 @@
             cursor: pointer;
             background: #FF7F50;
         }
+		
+		.canvasClass {
+            outline: none;
+            background: #FFE9C9;
+            padding: 10px;
+            border: 2px solid black;
+            border-radius: 5px;
+            font-size: 20px;
+            font-family: Verdana, Arial, Helvetica, sans-serif;
+        }
     </style>
 </head>
 <body>
 
 <h2>Игра 2D</h2>
 
-<canvas width = "800px" height = "600px" id = "can"></canvas>
+<canvas width = "800px" height = "600px" id = "pov" ></canvas>
 
 <br>
 <br>
@@ -45,7 +56,7 @@
 
 <h3 id = "scoreLabel"></h3>
 
-<script src = "./code.js"></script>
+<script src = "code.js"></script>
 
 </body>
 </html>
